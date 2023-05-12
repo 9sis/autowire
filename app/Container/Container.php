@@ -9,6 +9,18 @@ class Container
 
     protected $items = [];
 
+    public function __construct()
+    {
+        $this->loadServices();
+    }
+
+    protected function loadServices() {
+
+        $this->share(\Noodlehaus\Config::class, function() {
+            return new \Noodlehaus\Config(__DIR__ . '/../../config');
+        });
+    }
+
     public function add($name,callable $closure)
     {
         $this->items[$name] = $closure;
@@ -35,6 +47,7 @@ class Container
             return $this->autowrie($name);
         }
 
+        //Config::class 由于已经在构造方法存在 name 了，所以这里直接返回
         return $this->items[$name]();
     }
 
@@ -54,8 +67,31 @@ class Container
             throw new NotExistException("{$name}类不可实例化");
         }
 
+        if($constructor = $reflector->getConstructor()) {
+            $dependencies = $this->getDependencies($constructor);
+            return $reflector->newInstanceArgs($dependencies);
+        }
         //返回 new 对象
         return new $name();
+    }
+
+    public function getDependencies(\ReflectionMethod $method)
+    {
+
+        $params = $method->getParameters();
+
+        return array_map(function(\ReflectionParameter $parameter) {
+
+            $class = $parameter->getType();
+
+            //如果 class 不存在
+            if(!$class) {
+                throw new NotExistException("{$class}类不存在");
+            }
+
+            return $this->get($class->getName());
+
+        },$params);
     }
 
     public function has($name)

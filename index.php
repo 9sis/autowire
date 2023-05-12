@@ -1,6 +1,9 @@
 <?php
 
+use App\Controllers\HomeController;
+use App\Services\Cache;
 use App\Services\FileSystem;
+use Noodlehaus\Config;
 
 require 'vendor/autoload.php';
 
@@ -22,5 +25,18 @@ require 'vendor/autoload.php';
 // $config = $container->get('config');
 // dump($config);
 
-$app = app();
-dd($app->get(FileSystem::class));
+// $app = app();
+// dd($app->get(Cache::class));
+
+// dd(app(Cache::class));
+
+
+// $c = new HomeController(app(Config::class), app(Cache::class));
+// $c->index();
+
+
+// app(HomeController::class)->index();
+
+
+
+dd(app(Config::class));
